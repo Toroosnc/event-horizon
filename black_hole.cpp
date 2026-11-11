@@ -119,60 +119,6 @@ void drawWarpedSpacetime() {
 void drawLensRays() {
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-    const float phase = std::fmod(static_cast<float>(glfwGetTime()) * 0.8f, 11.0f) - 5.5f;
-    auto drawProbe = [](float x, bool incoming, float red, float green, float blue) {
-        const float capture = incoming ? std::clamp((x + 0.72f) / 1.44f, 0.0f, 1.0f) : 0.0f;
-        const bool visible = incoming ? x < 0.72f : x > 0.0f;
-        if (!visible) return;
-        const float bend = 0.10f / (std::abs(x) + 0.38f);
-        float objectX = x;
-        float y = incoming ? 0.38f : 0.22f + bend * 0.45f;
-        float z = incoming ? 0.0f : 0.30f + bend * 0.45f;
-        if (incoming && capture > 0.0f) {
-            const float spiralRadius = 0.64f * (1.0f - capture) + 0.025f;
-            const float spiralAngle = x * 17.0f;
-            objectX = std::cos(spiralAngle) * spiralRadius;
-            y = 0.38f * (1.0f - capture);
-            z = std::sin(spiralAngle) * spiralRadius;
-        }
-        const float approachFade = incoming ? std::clamp((x + 5.5f) / 1.4f, 0.0f, 1.0f) : 1.0f;
-        const float escapeFade = incoming ? 1.0f : std::clamp(x / 1.35f, 0.0f, 1.0f);
-        const float fade = incoming ? approachFade * (1.0f - capture * 0.92f) : escapeFade;
-        glLineWidth(2.0f);
-        glColor4f(incoming ? 0.22f : red, incoming ? 0.68f : green, incoming ? 1.0f : blue, 0.42f * fade);
-        glBegin(GL_LINE_STRIP);
-        for (int trail = 12; trail >= 1; --trail) {
-            const float trailX = x - trail * 0.07f;
-            const float trailBend = 0.10f / (std::abs(trailX) + 0.38f);
-            const float trailCapture = incoming ? std::clamp((trailX + 0.72f) / 1.44f, 0.0f, 1.0f) : 0.0f;
-            const float trailAngle = trailX * 17.0f;
-            const float trailRadius = 0.64f * (1.0f - trailCapture) + 0.025f;
-            const float trailY = incoming ? 0.38f * (1.0f - trailCapture) : 0.22f + trailBend * 0.45f;
-            const float trailZ = incoming ? (trailCapture > 0.0f ? std::sin(trailAngle) * trailRadius : 0.0f) : 0.30f + trailBend * 0.45f;
-            const float renderedTrailX = incoming && trailCapture > 0.0f ? std::cos(trailAngle) * trailRadius : trailX;
-            glVertex3f(renderedTrailX, trailY, trailZ);
-        }
-        glEnd();
-        glDisable(GL_DEPTH_TEST);
-        glEnable(GL_POINT_SMOOTH);
-        glPointSize(34.0f);
-        glColor4f(red, green, blue, 0.12f * fade);
-        glBegin(GL_POINTS); glVertex3f(objectX, y, z); glEnd();
-        glPointSize(23.0f);
-        glColor4f(red, green, blue, 0.32f * fade);
-        glBegin(GL_POINTS); glVertex3f(objectX, y, z); glEnd();
-        glPointSize(13.0f);
-        glColor4f(red, green, blue, 0.9f * fade);
-        glBegin(GL_POINTS); glVertex3f(objectX, y, z); glEnd();
-        glPointSize(7.0f);
-        glDisable(GL_BLEND);
-        glColor3f(1.0f, incoming ? 0.92f : 0.72f, incoming ? 0.42f : 0.16f);
-        glBegin(GL_POINTS); glVertex3f(objectX, y, z); glEnd();
-        glEnable(GL_BLEND);
-        glEnable(GL_DEPTH_TEST);
-    };
-
-    drawProbe(phase - 3.7f, false, 0.14f, 0.52f, 1.0f);
 
     constexpr float approachDuration = 4.0f;
     constexpr float orbitDuration = 1.6f;
@@ -185,11 +131,11 @@ void drawLensRays() {
         if (time < approachDuration) {
             const float approach = std::clamp(time / approachDuration, 0.0f, 1.0f);
             const float inverseApproach = 1.0f - approach;
-            x = inverseApproach * inverseApproach * inverseApproach * -5.5f
-                + 3.0f * inverseApproach * inverseApproach * approach * -4.0f
-                + 3.0f * inverseApproach * approach * approach * -0.62f
-                + approach * approach * approach * -orbitRadius;
-            z = 3.0f * inverseApproach * approach * approach * -1.2f;
+            x = inverseApproach * inverseApproach * inverseApproach * 5.5f
+                + 3.0f * inverseApproach * inverseApproach * approach * 4.0f
+                + 3.0f * inverseApproach * approach * approach * orbitRadius
+                + approach * approach * approach * orbitRadius;
+            z = 3.0f * inverseApproach * approach * approach * 1.2f;
             y = 0.18f;
             return;
         }
@@ -197,7 +143,7 @@ void drawLensRays() {
         const float fallElapsed = std::max(0.0f, time - approachDuration - orbitDuration);
         const float fallProgress = std::clamp(fallElapsed / fallDuration, 0.0f, 1.0f);
         const float radius = fallElapsed > 0.0f ? orbitRadius * (1.0f - fallProgress) + 0.015f : orbitRadius;
-        const float angle = Pi - orbitElapsed * 4.2f - fallElapsed * 5.5f;
+        const float angle = orbitElapsed * 4.2f + fallElapsed * 5.5f;
         x = std::cos(angle) * radius;
         y = 0.18f - 0.08f * fallProgress;
         z = std::sin(angle) * radius;
