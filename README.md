@@ -27,9 +27,11 @@ cmake --build build
 - `Space`: pause or resume the field
 - `G`: toggle the spacetime grid
 - `R`: reseed the particle field
+- `Z` / `X`: zoom in / zoom out
 - `Up` / `Down`: increase or decrease mass
 - `Left` / `Right`: change spin
 - Hold left mouse button and drag: orbit the camera around the black hole
+- Mouse scroll: zoom in or out
 - `Esc`: exit
 
 The fullscreen scene includes a curved spacetime grid, a rotating accretion disk, a moving light object, and lensing rays that bend around the event horizon.

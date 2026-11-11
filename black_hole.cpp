@@ -39,6 +39,10 @@ bool draggingCamera = false;
 double lastMouseX = 0.0;
 double lastMouseY = 0.0;
 
+void handleMouseScroll(GLFWwindow*, double, double yOffset) {
+    cameraDistance = std::clamp(cameraDistance - static_cast<float>(yOffset) * 0.35f, 3.0f, 20.0f);
+}
+
 void seedParticles() {
     std::mt19937 generator(static_cast<unsigned>(std::time(nullptr)));
     std::uniform_real_distribution<float> unit(0.0f, 1.0f);
@@ -335,6 +339,8 @@ void handleKey(GLFWwindow* window, int key, int, int action, int) {
     if (key == GLFW_KEY_SPACE) simulation.paused = !simulation.paused;
     if (key == GLFW_KEY_G) simulation.showGrid = !simulation.showGrid;
     if (key == GLFW_KEY_R) seedParticles();
+    if (key == GLFW_KEY_Z) cameraDistance = std::max(3.0f, cameraDistance - 0.35f);
+    if (key == GLFW_KEY_X) cameraDistance = std::min(20.0f, cameraDistance + 0.35f);
     if (key == GLFW_KEY_UP) simulation.mass = std::min(16.0f, simulation.mass + 0.2f);
     if (key == GLFW_KEY_DOWN) simulation.mass = std::max(3.0f, simulation.mass - 0.2f);
     if (key == GLFW_KEY_RIGHT) simulation.spin = std::min(0.98f, simulation.spin + 0.02f);
@@ -354,6 +360,7 @@ void handleMouseMove(GLFWwindow*, double x, double y) {
     lastMouseX = x;
     lastMouseY = y;
 }
+
 }
 
 int main() {
@@ -374,6 +381,7 @@ int main() {
     glfwSetKeyCallback(window, handleKey);
     glfwSetMouseButtonCallback(window, handleMouseButton);
     glfwSetCursorPosCallback(window, handleMouseMove);
+    glfwSetScrollCallback(window, handleMouseScroll);
     seedParticles();
     lastTime = glfwGetTime();
 
